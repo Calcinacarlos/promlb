@@ -1,0 +1,33 @@
+.acerca-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 40px 20px;
+}
+
+.acerca-card {
+  max-width: 700px;
+
+  background: rgba(255, 255, 255, 0.15);
+
+  color: white;
+}
+
+.acerca-redes {
+  display: flex;
+  gap: 20px;
+
+  margin-top: 30px;
+}
+
+.acerca-redes img {
+  width: 48px;
+  height: 48px;
+}
+
+.acerca-logo {
+  width: 200px;
+
+  margin-top: 30px;
+}

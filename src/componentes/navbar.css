@@ -1,0 +1,36 @@
+body {
+  font-family: "Inter", sans-serif;
+}
+.nav-global {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px 20px;
+
+  background: linear-gradient(90deg, #283048, #859398);
+  width: 100%;
+  color: white;
+  font-weight: bold;
+}
+
+.nav-left {
+  font-size: 18px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.nav-links a:hover {
+  color: #00d4ff;
+  transform: scale(1.05);
+}

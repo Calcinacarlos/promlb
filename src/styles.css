@@ -1,0 +1,32 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+#root {
+  height: 100%;
+  margin: 0;
+}
+.app-container {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.contenido {
+  flex: 1;
+}
+body {
+  color: white;
+  background: linear-gradient(90deg, #000000, #004e8f);
+  font-family: Arial, sans-serif;
+}

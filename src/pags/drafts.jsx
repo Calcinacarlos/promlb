@@ -71,23 +71,13 @@ function Drafts() {
 
   const [heroeS, setHeroeS] = useState(null);
   console.log(template[currentStep]);
-  const [fase, setFase] = useState(1);
-
-  const [misBans1, setMisBans1] = useState([]);
-  const [rivalBans1, setRivalBans1] = useState([]);
-
-  const [misBans2, setMisBans2] = useState([]);
-  const [rivalBans2, setRivalBans2] = useState([]);
-
-  const [picks, setPicks] = useState(Array(10).fill(null));
+  
 
   const [myBans, setMyBans] = useState(Array(5).fill(null));
   const [enemyBans, setEnemyBans] = useState(Array(5).fill(null));
   const [myPicks, setMyPicks] = useState(Array(5).fill(null));
   const [enemyPicks, setEnemyPicks] = useState(Array(5).fill(null));
 
-  const ordenPicks = ["A", "B", "B", "A", "A", "B", "B", "A", "A", "B"];
-  const pickActual = picks.filter((p) => p !== null).length;
 
   const pasoActual = template[currentStep];
 
@@ -99,13 +89,6 @@ function Drafts() {
   //B
   const picksB = enemyPicks;
   //m
-  const heroesBloqueados = [
-    ...misBans1,
-    ...rivalBans1,
-    ...misBans2,
-    ...rivalBans2,
-    ...picks,
-  ];
 
   const asignarHeroe = () => {
     if (heroeS === null) return;
@@ -200,89 +183,6 @@ function Drafts() {
           setHeroeS(null);
         }
         return;
-    // ===== FASE 1 =====
-    if (fase === 1) {
-      if (misBans1.length < 3) {
-        const yaExiste = misBans1.some((h) => h.id === heroeS.id);
-
-        if (yaExiste) return;
-
-        setMisBans1([...misBans1, heroeS]);
-        return;
-      }
-
-      if (rivalBans1.length < 3) {
-        const yaExiste = rivalBans1.some((h) => h.id === heroeS.id);
-
-        if (yaExiste) return;
-
-        setRivalBans1([...rivalBans1, heroeS]);
-
-        if (rivalBans1.length + 1 === 3) {
-          setFase(2);
-        }
-
-        return;
-      }
-    }
-
-    // ===== FASE 2 =====
-    if (fase === 2) {
-      const baneadosFase1 = [...misBans1, ...rivalBans1];
-
-      const existeEnFase1 = baneadosFase1.some((h) => h.id === heroeS.id);
-
-      if (existeEnFase1) return;
-
-      if (misBans2.length < 2) {
-        const yaExiste = misBans2.some((h) => h.id === heroeS.id);
-
-        if (yaExiste) return;
-
-        setMisBans2([...misBans2, heroeS]);
-        return;
-      }
-
-      if (rivalBans2.length < 2) {
-        const yaExiste = rivalBans2.some((h) => h.id === heroeS.id);
-
-        if (yaExiste) return;
-
-        setRivalBans2([...rivalBans2, heroeS]);
-
-        if (rivalBans2.length + 1 === 2) {
-          setFase(3);
-        }
-
-        return;
-      }
-    }
-    // ===== FASE 3 =====
-    if (fase === 3) {
-      const todosLosBans = [
-        ...misBans1,
-        ...rivalBans1,
-        ...misBans2,
-        ...rivalBans2,
-      ];
-
-      const estaBaneado = todosLosBans.some((h) => h.id === heroeS.id);
-
-      if (estaBaneado) return;
-
-      const yaPickeado = picks.some((h) => h && h.id === heroeS.id);
-
-      if (yaPickeado) return;
-
-      const nuevosPicks = [...picks];
-
-      nuevosPicks[pickActual] = heroeS;
-
-      setPicks(nuevosPicks);
-
-      return;
-    }
-    setCurrentStep(currentStep + 1);
   };
 
 
@@ -317,10 +217,16 @@ function Drafts() {
           <div className="heroes">
             {heroes.map((h, i) => {
               let bloqueado = false;
+              if (pasoActual?.action === "pick") {
+                const noDisponibles = [
+                  ...myBans,
+                  ...enemyBans,
+                  ...myPicks,
+                  ...enemyPicks,
+                ];
 
-              if (fase === 3) {
-                bloqueado = heroesBloqueados.some(
-                  (heroe) => heroe && heroe.id === h.id
+                bloqueado = noDisponibles.some(
+                  (heroe) => heroe?.id === h.id
                 );
               }
 

@@ -46,3 +46,31 @@ draftTemplates.rankedSecondPick =
     return { ...paso };
   });
 
+function crearPlantillaTorneo(fases) {
+  const contadores = {
+    ban: { A: 0, B: 0 },
+    pick: { A: 0, B: 0 },
+  };
+
+  return fases.flatMap(({ action, orden }) =>
+    [...orden].map((team) => ({
+      action,
+      team,
+      slot: contadores[action][team]++,
+    }))
+  );
+}
+
+draftTemplates.tournamentFirstPick = crearPlantillaTorneo([
+  { action: "ban", orden: "ABABAB" },
+  { action: "pick", orden: "ABBAAB" },
+  { action: "ban", orden: "BABA" },
+  { action: "pick", orden: "BAAB" },
+]);
+
+draftTemplates.tournamentSecondPick =
+  draftTemplates.tournamentFirstPick.map((paso) => ({
+    ...paso,
+    team: paso.team === "A" ? "B" : "A",
+  }));
+

@@ -36,6 +36,25 @@ function Drafts() {
       if (!pasoActual) return;
 
         const { action, team, slot } = pasoActual;
+        
+        if (modoDraft.startsWith("tournament") && action === "ban") {
+          const heroesUsados = [
+            ...myBans,
+            ...enemyBans,
+            ...myPicks,
+            ...enemyPicks,
+          ];
+
+          const repetido = heroesUsados.some(
+            (heroe) => heroe?.id === heroeS.id
+          );
+
+          if (repetido) {
+            alert("Este héroe ya fue utilizado en el torneo");
+            return;
+          }
+        }
+
         if (action === "ban") {
           const bansDelEquipo = team === "A" ? myBans : enemyBans;
 
@@ -158,7 +177,10 @@ function Drafts() {
           <div className="heroes">
             {heroes.map((h, i) => {
               let bloqueado = false;
-              if (pasoActual?.action === "pick") {
+              if (
+                pasoActual?.action === "pick" ||
+                (modoDraft.startsWith("tournament") && pasoActual?.action === "ban")
+              ) {
                 const noDisponibles = [
                   ...myBans,
                   ...enemyBans,
@@ -203,6 +225,15 @@ function Drafts() {
                 reiniciarDraft();
               }}
             >
+            
+              <option value="tournamentFirstPick">
+                Torneo - First Pick
+              </option>
+
+              <option value="tournamentSecondPick">
+                Torneo - Second Pick
+              </option>
+
               <option value="rankedFirstPick">
                 Ranked - First Pick
               </option>

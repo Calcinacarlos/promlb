@@ -162,15 +162,25 @@ function Drafts() {
     <div className="draft-container">
       {/* ================= PICKS ================= */}
       <div className="picks-row">
-        {/* TEAM A PICKS */}
-        <div className="team-row">
-          {picksA.map((s, i) => {
-            return (
+        {/* EQUIPO A: PICKS Y BANS */}
+        <div className="team-column">
+
+          <div className="team-row">
+            {picksA.map((s, i) => (
               <div key={i} className="pick-slot">
                 {s ? <img src={s.img} alt={s.name} /> : "Vacío"}
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          <div className="team-row">
+            {bansA.map((s, i) => (
+              <div key={i} className="slot ban">
+                {s ? <img src={s.img} alt={s.name} /> : "Vacío"}
+              </div>
+            ))}
+          </div>
+
         </div>
         {/* HEROES CENTRO */}
         <div className="heroes-panel">
@@ -248,46 +258,31 @@ function Drafts() {
             Reiniciar Draft
           </button>
         </div>
-        {/* TEAM B PICKS (invertido ) */}
-        <div className="team-row reverse">
-          {picksB.map((s, i) => {
-            return (
+                {/* EQUIPO B: PICKS Y BANS */}
+        <div className="team-column">
+
+          <div className="team-row reverse">
+            {picksB.map((s, i) => (
               <div key={i} className="pick-slot">
                 {s ? <img src={s.img} alt={s.name} /> : "Vacío"}
               </div>
-            );
-          })}
-        </div>
-      </div>
+            ))}
+          </div>
 
-      {/* ================= BANS ================= */}
-      {/* ================= A ================= */}
-      <div className="bans-row">
-        <div className="team-row">
-          {bansA.map((s, i) => {
-            return (
+          <div className="team-row reverse">
+            {bansB.map((s, i) => (
               <div key={i} className="slot ban">
                 {s ? <img src={s.img} alt={s.name} /> : "Vacío"}
               </div>
-            );
-          })}
-        </div>
-        {/* ================= B ================= */}
+            ))}
+          </div>
 
-        <div style={{ width: "200px" }} />
-
-        <div className="team-row reverse">
-          {bansB.map((s, i) => {
-            return (
-              <div key={i} className="slot ban">
-                {s ? <img src={s.img} alt={s.name} /> : "Vacío"}
-              </div>
-            );
-          })}
         </div>
-      </div>
-    </div>
+
+      </div> {/* Cierre de picks-row */}
+    </div>   /* Cierre de draft-container */
   );
 }
 
 export default Drafts;
+

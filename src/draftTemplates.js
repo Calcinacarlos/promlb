@@ -33,3 +33,16 @@ export const draftTemplates = {
     { action: "pick", team: "B", slot: 4 },
   ],
 };
+
+draftTemplates.rankedSecondPick =
+  draftTemplates.rankedFirstPick.map((paso) => {
+    if (paso.action === "pick") {
+      return {
+        ...paso,
+        team: paso.team === "A" ? "B" : "A",
+      };
+    }
+
+    return { ...paso };
+  });
+

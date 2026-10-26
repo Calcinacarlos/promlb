@@ -4,9 +4,9 @@ import { heroes } from "../data/heroes";
 import "./drafts.css";
 
 function Drafts() {
+  const [modoDraft, setModoDraft] = useState("rankedFirstPick");
 
-  
-  const template = draftTemplates.rankedFirstPick;
+  const template = draftTemplates[modoDraft];
 
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -192,6 +192,26 @@ function Drafts() {
               );
             })}
           </div>
+                      
+            <label htmlFor="modoDraft">Modo de draft: </label>
+
+            <select
+              id="modoDraft"
+              value={modoDraft}
+              onChange={(event) => {
+                setModoDraft(event.target.value);
+                reiniciarDraft();
+              }}
+            >
+              <option value="rankedFirstPick">
+                Ranked - First Pick
+              </option>
+
+              <option value="rankedSecondPick">
+                Ranked - Second Pick
+              </option>
+            </select>
+
           <button onClick={asignarHeroe}>Seleccionar</button>
           <button onClick={reiniciarDraft}>
             Reiniciar Draft

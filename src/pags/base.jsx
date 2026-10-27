@@ -5,9 +5,11 @@ import { obtenerResultado, guardarResultado, eliminarResultado,} from "../data/m
 
 function Base() {
   const [heroeSeleccionado, setHeroeSeleccionado] = useState(heroes[0].id);
+  const [busqueda, setBusqueda] = useState("");
+  const [busquedaRival, setBusquedaRival] = useState("");
 
-const [categoriaActiva, setCategoriaActiva] = useState("WIN");
-const [infoBase, setInfoBase] = useState(() => {
+  const [categoriaActiva, setCategoriaActiva] = useState("WIN");
+  const [infoBase, setInfoBase] = useState(() => {
   try {
     const datos = localStorage.getItem("mlbb-base-info");
 
@@ -138,9 +140,33 @@ const consultarResultado = (rivalId) => {
     rivalId
   );
 };
+const evaluadosHeroe = heroes.filter(
+  (heroe) =>
+    heroe.id !== heroeSeleccionado &&
+    consultarResultado(heroe.id) !== null
+).length;
+
+const totalEnfrentamientos =
+  heroes.length * (heroes.length - 1);
+
+const enfrentamientosEvaluados =
+  Object.keys(clasificaciones).length * 2;
   return (
     <div className="base-container">
       <h2>Base W/D/L — {heroes.length} héroes</h2>
+      <div className="wdl-progreso">
+        <h3>Progreso de evaluaciones</h3>
+
+        <p>
+          {enfrentamientosEvaluados} de {totalEnfrentamientos}
+          {" "}enfrentamientos evaluados
+        </p>
+
+        <progress
+          value={enfrentamientosEvaluados}
+          max={totalEnfrentamientos}
+        />
+      </div>
       <div className="base-info">
       <label>Nombre de la base:</label>
 
@@ -187,12 +213,33 @@ const consultarResultado = (rivalId) => {
       >
         🗑️ Comenzar desde cero
       </button>
+      <input
+        type="text"
+        placeholder="🔍 Buscar héroe..."
+        value={busqueda}
+        onChange={(e) => {
+          const texto = e.target.value;
+          setBusqueda(texto);
+
+          const encontrados = heroes.filter((heroe) =>
+            heroe.name.toLowerCase().includes(texto.toLowerCase())
+          );
+
+          if (texto.trim() && encontrados.length === 1) {
+            setHeroeSeleccionado(encontrados[0].id);
+          }
+        }}
+      />
       <select
       value={heroeSeleccionado}
       onChange={(e) => setHeroeSeleccionado(Number(e.target.value))}
       >
       
-      {heroes.map((heroe) => (
+      {heroes
+      .filter((heroe) =>
+        heroe.name.toLowerCase().includes(busqueda.toLowerCase())
+      )
+      .map((heroe) => (
       <option key={heroe.id} value={heroe.id}>
       {heroe.name}
       </option>
@@ -206,6 +253,9 @@ const consultarResultado = (rivalId) => {
   />
 
   <h3>{heroeActual.name}</h3>
+  <p>
+    Enfrentamientos evaluados: {evaluadosHeroe} de {heroes.length - 1}
+  </p>
 
 </div>
 <div className="wdl-container">
@@ -254,6 +304,12 @@ const consultarResultado = (rivalId) => {
   ))}
 </div>
 <h3>Héroes sin clasificar</h3>
+<input
+  type="text"
+  placeholder="🔍 Buscar rival..."
+  value={busquedaRival}
+  onChange={(e) => setBusquedaRival(e.target.value)}
+/>
 
 <div className="wdl-pendientes">
   {heroes
@@ -261,6 +317,9 @@ const consultarResultado = (rivalId) => {
   (heroe) =>
     heroe.id !== heroeSeleccionado &&
     !consultarResultado(heroe.id)
+)
+.filter((heroe) =>
+  heroe.name.toLowerCase().includes(busquedaRival.toLowerCase())
 )
   .map((heroe) => (
       <img

@@ -2,9 +2,29 @@ import { useState } from "react";
 import { draftTemplates } from "../draftTemplates";
 import { heroes } from "../data/heroes";
 import "./drafts.css";
+import { recomendarHeroes } from "../Analisis/recomendaciones";
 
 function Drafts() {
   const [modoDraft, setModoDraft] = useState("rankedFirstPick");
+  const [rolActivo, setRolActivo] = useState("TODOS");
+  const [metaDraft] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("mlbb-meta") || "{}");
+    } catch {
+      return {};
+    }
+  });
+  const [wdlDraft] = useState(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("mlbb-matchups") || "{}"
+      );
+    } catch {
+      return {};
+    }
+  });
+
+  const roles = ["TODOS", "EXP", "JG", "MID", "GOLD", "ROAM"];
 
   const template = draftTemplates[modoDraft];
 
@@ -17,6 +37,9 @@ function Drafts() {
   const [myBans, setMyBans] = useState(Array(5).fill(null));
   const [enemyBans, setEnemyBans] = useState(Array(5).fill(null));
   const [myPicks, setMyPicks] = useState(Array(5).fill(null));
+  const [rolesPicksA, setRolesPicksA] = useState(
+    Array(5).fill("FLEX")
+  );
   const [enemyPicks, setEnemyPicks] = useState(Array(5).fill(null));
 
 
@@ -148,6 +171,7 @@ function Drafts() {
 
 
     const reiniciarDraft = () => {
+      setRolesPicksA(Array(5).fill("FLEX"));
       setCurrentStep(0);
       setHeroeS(null);
 
@@ -157,6 +181,23 @@ function Drafts() {
       setMyPicks(Array(5).fill(null));
       setEnemyPicks(Array(5).fill(null));
     };
+    const recomendaciones = rolActivo === "TODOS"
+      ? []
+      : recomendarHeroes(
+          heroes,
+          rolActivo,
+          metaDraft,
+          wdlDraft,
+          enemyPicks,
+          []
+        );
+
+    const ordenRecomendaciones = new Map(
+      recomendaciones.map((r, indice) => [
+        r.heroe.id,
+        indice
+      ])
+    );
 
   return (
     <div className="draft-container">
@@ -164,7 +205,34 @@ function Drafts() {
       <div className="picks-row">
         {/* EQUIPO A: PICKS Y BANS */}
         <div className="team-column">
-
+          {/* ROLES DE LOS PICKS ALIADOS */}
+          <div className="team-row">
+            {picksA.map((heroe, i) => (
+              <select
+                key={i}
+                value={rolesPicksA[i]}
+                disabled={!heroe}
+                onChange={(e) => {
+                  const nuevosRoles = [...rolesPicksA];
+                  nuevosRoles[i] = e.target.value;
+                  setRolesPicksA(nuevosRoles);
+                }}
+                style={{
+                  flex: "1 1 0",
+                  minWidth: 0,
+                  fontSize: "10px",
+                  padding: "2px 0",
+                }}
+              >
+                <option value="FLEX">FLEX</option>
+                <option value="EXP">EXP</option>
+                <option value="JG">JG</option>
+                <option value="MID">MID</option>
+                <option value="GOLD">GOLD</option>
+                <option value="ROAM">ROAM</option>
+              </select>
+            ))}
+          </div>
           <div className="team-row">
             {picksA.map((s, i) => (
               <div key={i} className="pick-slot">
@@ -172,7 +240,7 @@ function Drafts() {
               </div>
             ))}
           </div>
-
+            
           <div className="team-row">
             {bansA.map((s, i) => (
               <div key={i} className="slot ban">
@@ -184,45 +252,114 @@ function Drafts() {
         </div>
         {/* HEROES CENTRO */}
         <div className="heroes-panel">
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              flexWrap: "nowrap",
+              gap: "5px",
+              marginBottom: "10px",
+              overflowX: "auto",
+              maxWidth: "100%",
+            }}
+          >
+            {roles.map((rol) => (
+              <button
+                key={rol}
+                type="button"
+                onClick={() => setRolActivo(rol)}
+                style={{
+                  background: rolActivo === rol ? "#2563eb" : "#333",
+                  color: "white",
+                  padding: "6px 10px",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                {rol}
+              </button>
+            ))}
+          </div>
+
           <div className="heroes">
-            {heroes.map((h, i) => {
-              let bloqueado = false;
-              if (
-                pasoActual?.action === "pick" ||
-                (modoDraft.startsWith("tournament") && pasoActual?.action === "ban")
-              ) {
-                const noDisponibles = [
-                  ...myBans,
-                  ...enemyBans,
-                  ...myPicks,
-                  ...enemyPicks,
-                ];
+            {heroes
+              .filter((h) => {
+                if (rolActivo === "TODOS") return true;
 
-                bloqueado = noDisponibles.some(
-                  (heroe) => heroe?.id === h.id
+                return ["S", "A", "B", "C", "D"].includes(
+                  metaDraft[`${rolActivo}-${h.id}`]
                 );
-              }
+              })
+              .filter((h) => {
+                if (!pasoActual) return true;
 
-              return (
+                const { action, team, slot } = pasoActual;
+
+                const todosLosBans = [...myBans, ...enemyBans];
+                const todosLosPicks = [...myPicks, ...enemyPicks];
+
+                // PICKS: excluir todos los héroes utilizados
+                if (action === "pick") {
+                  return ![...todosLosBans, ...todosLosPicks]
+                    .some((heroe) => heroe?.id === h.id);
+                }
+
+                // BANS DE TORNEO: no permitir repeticiones
+                if (action === "ban" && modoDraft.startsWith("tournament")) {
+                  return ![...todosLosBans, ...todosLosPicks]
+                    .some((heroe) => heroe?.id === h.id);
+                }
+
+                // BANS DE RANKED: respetar las reglas actuales
+                if (action === "ban") {
+                  const bansPropios = team === "A" ? myBans : enemyBans;
+
+                  const repetidoPropio = bansPropios.some(
+                    (heroe) => heroe?.id === h.id
+                  );
+
+                  const bansFase1 = [
+                    ...myBans.slice(0, 3),
+                    ...enemyBans.slice(0, 3),
+                  ];
+
+                  const repetidoFase1 = bansFase1.some(
+                    (heroe) => heroe?.id === h.id
+                  );
+
+                  return !repetidoPropio && !(slot >= 3 && repetidoFase1);
+                }
+
+                return true;
+                })
+                .sort((a, b) => {
+                  const posicionA =
+                    ordenRecomendaciones.get(a.id) ?? Infinity;
+
+                  const posicionB =
+                    ordenRecomendaciones.get(b.id) ?? Infinity;
+
+                  return posicionA - posicionB;
+                })
+                .map((h) => (
                 <div
-                  key={i}
+                  key={h.id}
                   className="hero"
-                  onClick={() => {
-                    if (!bloqueado) {
-                      setHeroeS(h);
-                    }
-                  }}
+                  onClick={() => setHeroeS(h)}
                   style={{
-                    opacity: bloqueado ? 0.3 : 1,
-                    cursor: bloqueado ? "not-allowed" : "pointer",
+                    cursor: "pointer",
                     border:
-                      heroeS === h ? "2px solid yellow" : "2px solid blue",
+                      heroeS?.id === h.id
+                        ? "2px solid yellow"
+                        : "2px solid blue",
                   }}
                 >
                   <img src={h.img} alt={h.name} />
                 </div>
-              );
-            })}
+              ))}
           </div>
                       
             <label htmlFor="modoDraft">Modo de draft: </label>
